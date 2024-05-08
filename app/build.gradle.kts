@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services")
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -26,7 +28,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -39,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -52,9 +55,22 @@ android {
 
 dependencies {
 
-    //Firebase
-    implementation(libs.firebase.bom)
-    implementation(libs.firebase.analytics)
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.storage)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.firebase.firestore)
+    kapt(libs.hilt.android.compiler)
+
+    // Compose
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material)
+
+    // Coil
+    implementation(libs.coil.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

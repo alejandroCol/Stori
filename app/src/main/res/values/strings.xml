@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Stori Bank</string>
+
+    <string name="movement_detail_title">Detalles del movimiento</string>
+    <string name="back">Atrás</string>
+
+    <string name="movement_id">ID del movimiento</string>
+    <string name="amount">Cantidad</string>
+    <string name="description">Descripción</string>
+    <string name="date">Fecha</string>
 </resources>
