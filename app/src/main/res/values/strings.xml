@@ -2,10 +2,48 @@
     <string name="app_name">Stori Bank</string>
 
     <string name="movement_detail_title">Detalles del movimiento</string>
-    <string name="back">Atrás</string>
+    <string name="back">Back</string>
+    <string name="movement_id">Movement ID</string>
+    <string name="amount">Amount</string>
+    <string name="description">Description</string>
+    <string name="date">Date</string>
+    <string name="registration_title">Registration</string>
+    <string name="permission_granted">Permission Granted</string>
+    <string name="permission_denied">Permission Denied</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="register_button_text">Register</string>
+    <string name="error_general">Error</string>
+    <string name="fields_error">Missing fields to complete</string>
 
-    <string name="movement_id">ID del movimiento</string>
-    <string name="amount">Cantidad</string>
-    <string name="description">Descripción</string>
-    <string name="date">Fecha</string>
+    <string name="bank_information_title">Bank Information</string>
+    <string name="bank_balance">Bank Balance</string>
+    <string name="movement_description">Description: %s</string>
+    <string name="movement_amount">Amount: %s</string>
+    <string name="movement_date">Date: %s</string>
+
+    <string name="movement_id_label">Movement ID:</string>
+    <string name="amount_label">Amount:</string>
+    <string name="description_label">Description:</string>
+    <string name="date_label">Date:</string>
+    <string name="back_content_description">Back</string>
+    <string name="date_format">dd/MM/yyyy</string>
+
+    <string name="login_title">Login</string>
+    <string name="create_account">Create an account</string>
+    <string name="sign_in">Sign In</string>
+    <string name="login_success">Login Successful</string>
+    <string name="login_error">Login Error: %s</string>
+
+    <string name="bank_info_null">Failed to fetch bank information: Bank info is null.</string>
+    <string name="error_fetching_bank_info">Failed to fetch bank information: %s</string>
+
+    <string name="login_error_incorrect">User or password incorrect</string>
+    <string name="login_error_default">An error occurred</string>
+
+    <string name="name_hint">Name</string>
+    <string name="add_image_button">Add Image</string>
+    <string name="register_button">Register</string>
+    <string name="registration_successful">Registration Successful</string>
+    <string name="registration_error">Registration Error: %s</string>
 </resources>

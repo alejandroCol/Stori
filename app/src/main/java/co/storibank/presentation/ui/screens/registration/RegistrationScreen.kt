@@ -3,7 +3,6 @@ package co.storibank.presentation.ui.screens.registration
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,19 +24,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import co.storibank.R
 import co.storibank.presentation.ui.screens.util.createImageFile
 import co.storibank.presentation.ui.screens.util.uriToByteArray
-import co.storibank.presentation.viewmodel.RegistrationState
 import co.storibank.presentation.viewmodel.RegistrationViewModel
+import co.storibank.presentation.viewmodel.state.RegistrationState
 import co.storibank.ui.theme.PurpleGrey80
 import coil.compose.rememberAsyncImagePainter
-import java.util.Objects
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,14 +47,14 @@ fun RegistrationScreen(viewModel: RegistrationViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Registration") },
+                title = { Text(text = stringResource(id = R.string.registration_title)) },
                 modifier = Modifier.background(PurpleGrey80),
             )
         },
         content = {
             RegistrationContent(
-                onRegister = { email, password, imageBytes ->
-                    viewModel.signUp(email, password, imageBytes)
+                onRegister = { name, email, password, imageBytes ->
+                    viewModel.signUp(name, email, password, imageBytes)
                 },
                 registrationState = registrationState,
             )
@@ -66,22 +64,22 @@ fun RegistrationScreen(viewModel: RegistrationViewModel) {
 
 @Composable
 fun RegistrationContent(
-    onRegister: (String, String, ByteArray) -> Unit,
+    onRegister: (String, String, String, ByteArray) -> Unit,
     registrationState: RegistrationState,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var name by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     val file = context.createImageFile()
+
     val uri =
         FileProvider.getUriForFile(
-            Objects.requireNonNull(context),
-            "co.storibank" + ".provider",
+            context,
+            context.packageName + ".provider",
             file,
         )
-
     var capturedImageUri by remember {
         mutableStateOf<Uri>(Uri.EMPTY)
     }
@@ -96,10 +94,18 @@ fun RegistrationContent(
             ActivityResultContracts.RequestPermission(),
         ) {
             if (it) {
-                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.permission_granted),
+                    Toast.LENGTH_SHORT,
+                ).show()
                 cameraLauncher.launch(uri)
             } else {
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.permission_denied),
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
 
@@ -126,9 +132,17 @@ fun RegistrationContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text(stringResource(id = R.string.name_hint)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(id = R.string.email_label)) },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -136,23 +150,11 @@ fun RegistrationContent(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text(stringResource(id = R.string.password_label)) },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
         )
         Spacer(modifier = Modifier.height(16.dp))
-
-        selectedImageBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-                modifier =
-                    Modifier
-                        .size(100.dp)
-                        .clip(shape = RoundedCornerShape(4.dp)),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
 
         Button(
             onClick = {
@@ -166,13 +168,13 @@ fun RegistrationContent(
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = "Add Image")
+            Text(text = stringResource(id = R.string.add_image_button))
         }
 
         Button(
             onClick = {
                 val byteArray = uriToByteArray(context.contentResolver, capturedImageUri)
-                onRegister(email, password, byteArray ?: ByteArray(0))
+                onRegister(name, email, password, byteArray ?: ByteArray(0))
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = registrationState !is RegistrationState.Loading,
@@ -180,21 +182,25 @@ fun RegistrationContent(
             if (registrationState is RegistrationState.Loading) {
                 CircularProgressIndicator()
             } else {
-                Text(text = "Register")
+                Text(text = stringResource(id = R.string.register_button))
             }
         }
 
         if (registrationState is RegistrationState.Success) {
             Text(
-                text = "Registration Successful",
+                text = stringResource(id = R.string.registration_successful),
                 color = PurpleGrey80,
                 modifier = Modifier.padding(top = 16.dp),
             )
+            email = ""
+            password = ""
+            name = ""
+            capturedImageUri = Uri.EMPTY
         }
 
         if (registrationState is RegistrationState.Error) {
             Text(
-                text = "Registration Error: ${registrationState.message}",
+                text = stringResource(id = R.string.registration_error, registrationState.message),
                 color = PurpleGrey80,
                 modifier = Modifier.padding(top = 16.dp),
             )

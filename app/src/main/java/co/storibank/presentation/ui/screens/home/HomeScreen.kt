@@ -24,14 +24,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import co.storibank.R
 import co.storibank.domain.model.BankInfo
 import co.storibank.domain.model.BankMovement
+import co.storibank.presentation.ui.screens.util.format
 import co.storibank.presentation.viewmodel.HomeViewModel
 import co.storibank.presentation.viewmodel.state.BankInfoState
 import co.storibank.ui.theme.PurpleGrey80
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -43,25 +44,20 @@ fun HomeScreen(
     val bankInfoState by viewModel.bankInfoState.collectAsState()
 
     if (bankInfoState is BankInfoState.Idle) {
-        viewModel.getBankInfo()
+        viewModel.fetchBankInfo()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Bank Information") },
+                title = { Text(text = stringResource(R.string.bank_information_title)) },
                 modifier = Modifier.background(PurpleGrey80),
             )
         },
         content = {
             when (bankInfoState) {
                 is BankInfoState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                    LoadingContent()
                 }
 
                 is BankInfoState.Success -> {
@@ -78,6 +74,7 @@ fun HomeScreen(
                 }
 
                 else -> {
+                    ErrorContent(errorMessage = stringResource(R.string.error_general))
                 }
             }
         },
@@ -98,7 +95,7 @@ private fun BankInfoContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Bank Balance: ${bankInfo.balance}",
+            text = "${stringResource(R.string.bank_balance)} ${bankInfo.balance}",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp),
         )
@@ -132,12 +129,20 @@ private fun MovementItem(
                     .padding(16.dp)
                     .fillMaxWidth(),
         ) {
-            Text(text = "Description: ${movement.description}")
-            Text(text = "Amount: ${movement.amount}")
-            val formattedDate =
-                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(movement.date)
-            Text(text = "Date: $formattedDate")
+            Text(text = stringResource(R.string.movement_description, movement.description))
+            Text(text = stringResource(R.string.movement_amount, movement.amount))
+            Text(text = stringResource(R.string.movement_date, movement.date.format()))
         }
+    }
+}
+
+@Composable
+private fun LoadingContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
     }
 }
 

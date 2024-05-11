@@ -20,8 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import co.storibank.R
 import co.storibank.presentation.viewmodel.LoginViewModel
 import co.storibank.presentation.viewmodel.state.LoginState
 import co.storibank.ui.theme.PurpleGrey80
@@ -39,18 +41,16 @@ fun LoginScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Login") },
+                title = { Text(text = stringResource(R.string.login_title)) },
                 modifier = Modifier.background(PurpleGrey80),
             )
         },
         content = {
             LoginContent(
-                navigateToRegistration = navigateToRegistration,
-                navigateToHome = navigateToHome,
-                onLogin = { email, password ->
-                    viewModel.signIn(email, password)
-                },
-                loginState = loginState,
+                navigateToRegistration,
+                navigateToHome,
+                viewModel::signIn,
+                loginState,
             )
         },
     )
@@ -74,56 +74,97 @@ fun LoginContent(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-        )
+        EmailTextField(email) { email = it }
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-        )
+        PasswordTextField(password) { password = it }
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
+        LoginButton(
             onClick = { onLogin(email, password) },
-            modifier = Modifier.fillMaxWidth(),
             enabled = loginState !is LoginState.Loading,
-        ) {
-            if (loginState is LoginState.Loading) {
-                CircularProgressIndicator()
-            } else {
-                Text(text = "Sign In")
+        )
+
+        TextButton(onClick = navigateToRegistration, modifier = Modifier.fillMaxWidth()) {
+            Text(text = stringResource(R.string.create_account))
+        }
+
+        when (loginState) {
+            is LoginState.Success -> {
+                SuccessMessage(stringResource(R.string.login_success), navigateToHome)
+            }
+
+            is LoginState.Error -> {
+                ErrorMessage(stringResource(R.string.login_error, loginState.message))
+            }
+
+            else -> {
+                Box(
+                    modifier = Modifier.height(1.dp),
+                )
             }
         }
+    }
+}
 
-        TextButton(
-            onClick = { navigateToRegistration() },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(text = "Create an account")
-        }
+@Composable
+private fun EmailTextField(
+    email: String,
+    onEmailChanged: (String) -> Unit,
+) {
+    OutlinedTextField(
+        value = email,
+        onValueChange = onEmailChanged,
+        label = { Text(stringResource(R.string.email_label)) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
 
-        if (loginState is LoginState.Success) {
-            Text(
-                text = "Login Successful",
-                color = Color.Green,
-                modifier = Modifier.padding(top = 16.dp),
-            )
-            navigateToHome()
-        }
+@Composable
+private fun PasswordTextField(
+    password: String,
+    onPasswordChanged: (String) -> Unit,
+) {
+    OutlinedTextField(
+        value = password,
+        onValueChange = onPasswordChanged,
+        label = { Text(stringResource(R.string.password_label)) },
+        modifier = Modifier.fillMaxWidth(),
+        visualTransformation = PasswordVisualTransformation(),
+    )
+}
 
-        if (loginState is LoginState.Error) {
-            Text(
-                text = "Login Error: ${loginState.message}",
-                color = Color.Red,
-                modifier = Modifier.padding(top = 16.dp),
-            )
+@Composable
+private fun LoginButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
+    Button(onClick = onClick, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
+        if (enabled) {
+            Text(text = stringResource(R.string.sign_in))
+        } else {
+            CircularProgressIndicator()
         }
     }
+}
+
+@Composable
+private fun SuccessMessage(
+    message: String,
+    action: () -> Unit,
+) {
+    Text(
+        text = message,
+        color = Color.Green,
+        modifier = Modifier.padding(top = 16.dp),
+    )
+    action()
+}
+
+@Composable
+private fun ErrorMessage(message: String) {
+    Text(
+        text = message,
+        color = Color.Red,
+        modifier = Modifier.padding(top = 16.dp),
+    )
 }

@@ -6,5 +6,5 @@ data class BankMovementDataModel(
     val id: String,
     val amount: Double,
     val description: String,
-    val date: Date
+    val date: Date,
 )

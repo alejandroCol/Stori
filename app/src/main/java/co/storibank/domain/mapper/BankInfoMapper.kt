@@ -13,24 +13,8 @@ object BankInfoMapper {
         )
     }
 
-    fun BankInfo.toDataModel(): BankInfoDataModel {
-        return BankInfoDataModel(
-            balance = this.balance,
-            movements = this.movements.map { it.toDataModel() },
-        )
-    }
-
     private fun BankMovementDataModel.toDomain(): BankMovement {
         return BankMovement(
-            id = this.id,
-            amount = this.amount,
-            description = this.description,
-            date = this.date,
-        )
-    }
-
-    private fun BankMovement.toDataModel(): BankMovementDataModel {
-        return BankMovementDataModel(
             id = this.id,
             amount = this.amount,
             description = this.description,

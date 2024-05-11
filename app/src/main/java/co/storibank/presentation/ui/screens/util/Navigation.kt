@@ -3,6 +3,7 @@ package co.storibank.presentation.ui.screens.util
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -24,21 +25,12 @@ fun Stori(
     registrationViewModel: RegistrationViewModel,
     homeViewModel: HomeViewModel,
 ) {
-    val navController = SetupNavigation()
+    val navController = rememberNavController()
+    SetupNavigation()
 
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            val loginState by loginViewModel.loginState.collectAsState()
-
-            if (loginState is LoginState.Success) {
-                navController.navigate("home")
-            } else {
-                LoginScreen(
-                    viewModel = loginViewModel,
-                    navigateToRegistration = { navController.navigate("registration") },
-                    navigateToHome = { navController.navigate("home") },
-                )
-            }
+            ShowLoginScreen(navController, loginViewModel)
         }
         composable("registration") {
             RegistrationScreen(
@@ -46,30 +38,18 @@ fun Stori(
             )
         }
         composable("home") {
-            val loginState by loginViewModel.loginState.collectAsState()
-
-            if (loginState is LoginState.Success) {
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    navigateToMovementDetail = { movementId ->
-                        navController.navigate("movementDetail/$movementId")
-                    },
-                )
-            }
+            ShowHomeScreen(navController, loginViewModel, homeViewModel)
         }
         composable(
             route = "movementDetail/{movementId}",
             arguments = listOf(navArgument("movementId") { type = NavType.StringType }),
         ) { backStackEntry ->
-            val loginState by loginViewModel.loginState.collectAsState()
-            if (loginState is LoginState.Success) {
-                val movementId = backStackEntry.arguments?.getString("movementId")
-                val movement = homeViewModel.getMovementById(movementId ?: "")
-                MovementDetailScreen(
-                    movement = movement,
-                    navigateBack = { navController.popBackStack() },
-                )
-            }
+            ShowMovementDetailScreen(
+                navController,
+                loginViewModel,
+                homeViewModel,
+                backStackEntry,
+            )
         }
     }
 }
@@ -78,4 +58,57 @@ fun Stori(
 fun SetupNavigation(): NavHostController {
     val navController = rememberNavController()
     return navController
+}
+
+@Composable
+fun ShowLoginScreen(
+    navController: NavHostController,
+    loginViewModel: LoginViewModel,
+) {
+    val loginState by loginViewModel.loginState.collectAsState()
+
+    if (loginState is LoginState.Success) {
+        navController.navigate("home")
+    } else {
+        LoginScreen(
+            viewModel = loginViewModel,
+            navigateToRegistration = { navController.navigate("registration") },
+            navigateToHome = { navController.navigate("home") },
+        )
+    }
+}
+
+@Composable
+fun ShowHomeScreen(
+    navController: NavHostController,
+    loginViewModel: LoginViewModel,
+    homeViewModel: HomeViewModel,
+) {
+    val loginState by loginViewModel.loginState.collectAsState()
+    if (loginState is LoginState.Success) {
+        HomeScreen(
+            viewModel = homeViewModel,
+            navigateToMovementDetail = { movementId ->
+                navController.navigate("movementDetail/$movementId")
+            },
+        )
+    }
+}
+
+@Composable
+fun ShowMovementDetailScreen(
+    navController: NavHostController,
+    loginViewModel: LoginViewModel,
+    homeViewModel: HomeViewModel,
+    backStackEntry: NavBackStackEntry,
+) {
+    val loginState by loginViewModel.loginState.collectAsState()
+    if (loginState is LoginState.Success) {
+        val movementId = backStackEntry.arguments?.getString("movementId")
+        val movement = homeViewModel.findMovementById(movementId ?: "")
+        MovementDetailScreen(
+            movement = movement,
+            navigateBack = { navController.popBackStack() },
+        )
+    }
 }

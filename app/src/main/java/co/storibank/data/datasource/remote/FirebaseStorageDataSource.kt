@@ -1,6 +1,6 @@
 package co.storibank.data.datasource.remote
 
-import co.storibank.domain.model.User
+import co.storibank.data.model.UserDataModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
@@ -14,20 +14,21 @@ class FirebaseStorageDataSource
         private val firebaseFirestore: FirebaseFirestore,
     ) {
         suspend fun uploadImage(
-            userId: String,
-            imageName: String,
+            user: UserDataModel,
             imageBytes: ByteArray,
         ): Boolean {
-            val reference = firebaseStorage.reference.child(imageName)
+            val reference = firebaseStorage.reference.child(user.image)
 
             val uploadTask = reference.putStream(ByteArrayInputStream(imageBytes))
 
-            firebaseFirestore.collection("users").document(userId).set(User(userId)).await()
+            firebaseFirestore.collection("users")
+                .document(user.uid).set(user).await()
 
             return try {
                 uploadTask.await()
                 val imageUrl = reference.downloadUrl.await().toString()
-                firebaseFirestore.collection("users").document(userId).update("image", imageUrl).await()
+                firebaseFirestore.collection("users")
+                    .document(user.uid).update("image", imageUrl).await()
                 true
             } catch (e: Exception) {
                 e.printStackTrace()

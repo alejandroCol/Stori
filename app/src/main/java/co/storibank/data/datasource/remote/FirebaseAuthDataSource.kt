@@ -10,11 +10,12 @@ class FirebaseAuthDataSource
     constructor(private val firebaseAuth: FirebaseAuth) {
         suspend fun registerUser(userDataModel: UserDataModel): Boolean {
             return try {
-                firebaseAuth.createUserWithEmailAndPassword(
-                    userDataModel.email,
-                    userDataModel.password,
-                )
-                    .await()
+                userDataModel.password?.let {
+                    firebaseAuth.createUserWithEmailAndPassword(
+                        userDataModel.email,
+                        it,
+                    ).await()
+                }
                 true
             } catch (e: Exception) {
                 false
@@ -29,8 +30,7 @@ class FirebaseAuthDataSource
                 firebaseAuth.signInWithEmailAndPassword(
                     email,
                     password,
-                )
-                    .await()
+                ).await()
                 true
             } catch (e: Exception) {
                 false

@@ -1,11 +1,14 @@
 package co.storibank.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.storibank.R
 import co.storibank.domain.model.BankMovement
 import co.storibank.domain.usecase.GetBankInfoUseCase
 import co.storibank.presentation.viewmodel.state.BankInfoState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,30 +19,25 @@ class HomeViewModel
     @Inject
     constructor(
         private val getBankInfoUseCase: GetBankInfoUseCase,
+        @ApplicationContext private val context: Context,
     ) : ViewModel() {
         private val _bankInfoState = MutableStateFlow<BankInfoState>(BankInfoState.Idle)
         val bankInfoState: StateFlow<BankInfoState> = _bankInfoState
 
-        fun getBankInfo() {
+        fun fetchBankInfo() {
             viewModelScope.launch {
                 _bankInfoState.value = BankInfoState.Loading
-
                 try {
-                    val bankInfo = getBankInfoUseCase()
-                    _bankInfoState.value =
-                        if (bankInfo != null) {
-                            BankInfoState.Success(bankInfo)
-                        } else {
-                            BankInfoState.Error("Failed to fetch bank info")
-                        }
+                    val bankInfo = getBankInfoUseCase() ?: throw Exception(context.getString(R.string.bank_info_null))
+                    _bankInfoState.value = BankInfoState.Success(bankInfo)
                 } catch (e: Exception) {
-                    _bankInfoState.value = BankInfoState.Error("Failed to fetch bank info")
+                    val errorMessage = context.getString(R.string.error_fetching_bank_info, e.message)
+                    _bankInfoState.value = BankInfoState.Error(errorMessage)
                 }
             }
         }
 
-        fun getMovementById(movementId: String): BankMovement? {
-            val state = _bankInfoState.value as BankInfoState.Success
-            return state.bankInfo.movements.find { it.id == movementId }
+        fun findMovementById(movementId: String): BankMovement? {
+            return (_bankInfoState.value as? BankInfoState.Success)?.bankInfo?.movements?.find { it.id == movementId }
         }
     }

@@ -13,8 +13,7 @@ interface UserRepository {
     fun getCurrentUser(): User?
 
     suspend fun uploadUserImage(
-        userId: String,
-        imageName: String,
+        user: User,
         imageBytes: ByteArray,
     ): Boolean
 }

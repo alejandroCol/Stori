@@ -1,8 +1,12 @@
 package co.storibank.presentation.ui.screens.util
 
+import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import co.storibank.R
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -47,4 +51,11 @@ fun uriToByteArray(
     } finally {
         inputStream?.close()
     }
+}
+
+@SuppressLint("SimpleDateFormat")
+@Composable
+fun Date?.format(): String {
+    val dateFormat = stringResource(R.string.date_format)
+    return SimpleDateFormat(dateFormat).format(this ?: Date())
 }

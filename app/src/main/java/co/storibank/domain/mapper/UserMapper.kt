@@ -14,8 +14,11 @@ object UserMapper {
 
     fun User.mapToData(): UserDataModel {
         return UserDataModel(
+            name = this.name,
             email = this.email,
-            password = this.password ?: "",
+            password = this.password,
+            image = this.image ?: "",
+            uid = this.uid ?: "",
         )
     }
 

@@ -28,14 +28,13 @@ class UserRepositoryImpl
 
         override fun getCurrentUser(): User? {
             val currentUser = firebaseAuthDataSource.getCurrentUser()
-            return currentUser?.let { it.mapToDomain() }
+            return currentUser?.mapToDomain()
         }
 
         override suspend fun uploadUserImage(
-            userId: String,
-            imageName: String,
+            user: User,
             imageBytes: ByteArray,
         ): Boolean {
-            return firebaseStorage.uploadImage(userId, imageName, imageBytes)
+            return firebaseStorage.uploadImage(user.mapToData(), imageBytes)
         }
     }
